@@ -1,0 +1,33 @@
+# Dependency directories
+node_modules/
+.svelte-kit
+.cloudflare
+
+# IDE related
+.idea
+
+# Test coverage
+coverage
+*.lcov
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+.env.test
+
+# build output
+.vercel
+
+# OS-specific
+.DS_Store
+yarn.lock
+vite.config.js.timestamp-*
+/packages/create-svelte/template/CHANGELOG.md
+/packages/package/test/**/package
+/documentation/types.js
+
+tmp
+
+benchmarking/compare/.results
