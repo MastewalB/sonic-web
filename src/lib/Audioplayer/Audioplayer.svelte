@@ -1,68 +1,65 @@
 <script>
-    import {createEventDispatcher, tick} from 'svelte';
-    import {trackIndex, isPlaying, playQueue, state} from './store.js';
-    import {displayDuration} from './utils.js'
-
+    import { createEventDispatcher, tick } from "svelte";
+    import { trackIndex, isPlaying, playQueue, state } from "./store.js";
+    import { displayDuration } from "./utils.js";
 
     const dispatch = createEventDispatcher();
-    // export let className = '';
-    // export {className as class};
 
     export const playbackloop = {
-        repeat: 'repeat',
-        repeatAll: 'repeat-all',
-        noRepeat: 'no-repeat'
-    }
+        repeat: "repeat",
+        repeatAll: "repeat-all",
+        noRepeat: "no-repeat",
+    };
 
     export let volume = 1;
     export let shuffle = false;
-    export let loop = 'repeat-all';
-    // export let selectedIndex = 0;
+    export let loop = "repeat-all";
 
     // Initialize from localStorage
-    if (typeof window !== 'undefined') {
-        const storedVolume = +(localStorage.getItem('volume'));
+    if (typeof window !== "undefined") {
+        const storedVolume = +localStorage.getItem("volume");
         if (!isNaN(storedVolume)) volume = storedVolume;
 
-        shuffle = localStorage.getItem('shuffle') === 'true' || false;
-        loop = localStorage.getItem('loop') || 'repeat-all';
+        shuffle = localStorage.getItem("shuffle") === "true" || false;
+        loop = localStorage.getItem("loop") || "repeat-all";
     }
-
-    // trackIndex.set(selectedIndex);
 
 
     /**@type {HTMLAudioElement}*/
     export let audio = {};
 
-    /**@type {HTMLElement}*/
-    // export let controller = {};
     let duration = 0;
 
     $: trackprogress = 0;
 
     $: currentTrack = playQueue[$trackIndex];
 
-    $:{
+    $: {
         // Change the state to repeat or not
         state.set(loop);
-        if(typeof(window)!='undefined') {
-            localStorage.setItem('loop', loop.toString());
+        if (typeof window != "undefined") {
+            localStorage.setItem("loop", loop.toString());
         }
     }
-   
-    $:{
+
+    $: {
         // set the audio volume
         audio.volume = volume;
-        if(typeof(window)!='undefined') {
-            localStorage.setItem('volume', volume.toString())
+        if (typeof window != "undefined") {
+            localStorage.setItem("volume", volume.toString());
         }
     }
 
     let previousTrackIndex = -1;
 
-    $: if (audio && $playQueue.length > 0 && $trackIndex >= 0  && $trackIndex !== previousTrackIndex) {
+    $: if (
+        audio &&
+        $playQueue.length > 0 &&
+        $trackIndex >= 0 &&
+        $trackIndex !== previousTrackIndex
+    ) {
         tick().then(() => {
-            console.log('Audio source changed:', $playQueue[$trackIndex]);
+            console.log("Audio source changed:", $playQueue[$trackIndex]);
             console.log({
                 trackIndex: $trackIndex,
                 state: $state,
@@ -74,125 +71,131 @@
 
                 previousTrackIndex = $trackIndex;
                 audio.play().catch((e) => {
-                    console.error('Error trying to play audio:', e);
+                    console.error("Error trying to play audio:", e);
                 });
             }
         });
     }
 
-     //Loads the metadata
-     function loadedMetadata (e) {
+    //Loads the metadata
+    function loadedMetadata(e) {
         duration = audio.duration;
         audio.volume = volume;
-        dispatch('loadedmetadata', e);
+        dispatch("loadedmetadata", e);
     }
     // runs every time audio currentTime changes
-    function timeUpdate (e) {
-        trackprogress =  audio.currentTime ?? 0;
+    function timeUpdate(e) {
+        trackprogress = audio.currentTime ?? 0;
         dispatch("timeupdate", e);
     }
     // runs after an audio has finished playing
-    function ended (e) {
+    function ended(e) {
         //Repeat all audio one after another
-        if ($state === 'repeat-all') {
+        if ($state === "repeat-all") {
             // if shuffle is true play audio of any random number track
-            if (shuffle) trackIndex.set(Math.floor(Math.random()*playQueue.length));
-            else playNext()
+            if (shuffle)
+                trackIndex.set(Math.floor(Math.random() * playQueue.length));
+            else playNext();
         }
         // Repeat the same audio
-        else if ($state === 'repeat') audio.play()
+        else if ($state === "repeat") audio.play();
         // Stop playing
-        else isPlaying.set(false)
-        
-        dispatch('ended', e)
+        else isPlaying.set(false);
+
+        dispatch("ended", e);
     }
 
     function togglePlay() {
-        if ($trackIndex) { // Only toggle if a track is loaded
-            isPlaying.set(playing => !playing);
+        if ($trackIndex) {
+            // Only toggle if a track is loaded
+            isPlaying.set((playing) => !playing);
         }
     }
-    
-    function changeVolume (e) {
-        volume = +(e.target.value) ?? 1;
+
+    function changeVolume(e) {
+        volume = +e.target.value ?? 1;
     }
 
     // change loop to repeat, no repeat or repeat all
-    function changeState () {
-        if (loop === 'no-repeat') loop = 'repeat'
-        else if (loop === 'repeat') loop = 'repeat-all'
-        else loop = 'no-repeat'
+    function changeState() {
+        if (loop === "no-repeat") loop = "repeat";
+        else if (loop === "repeat") loop = "repeat-all";
+        else loop = "no-repeat";
     }
-   
-    function mute () {
-        if (audio.volume != 0) volume=0;
+
+    function mute() {
+        if (audio.volume != 0) volume = 0;
         else volume = 1;
     }
 
-    function onSeek (e) {
-        audio.currentTime = +(e.target.value)  || 0;
+    function onSeek(e) {
+        audio.currentTime = +e.target.value || 0;
         trackprogress = audio.currentTime ?? 0;
     }
 
-     // play previous track
-     function playPrevious () {
+    // play previous track
+    function playPrevious() {
         if ($trackIndex - 1 < 0) trackIndex.set(0);
         else trackIndex.set($trackIndex - 1);
     }
     // play next track
-    function playNext () {
-       if ($trackIndex < $playQueue.length - 1) trackIndex.set($trackIndex + 1);
-       else trackIndex.set(0);
+    function playNext() {
+        if ($trackIndex < $playQueue.length - 1)
+            trackIndex.set($trackIndex + 1);
+        else trackIndex.set(0);
     }
     // enable/disable shuffle
-    function setShuffle () {
+    function setShuffle() {
         shuffle = !shuffle;
-        localStorage.setItem('shuffle', shuffle.toString());
+        localStorage.setItem("shuffle", shuffle.toString());
     }
 
-
-    //Event dispatch 
-    const canplay = (e) => dispatch("canplay", e)
-    const canplaythrough = (e) => dispatch("canplaythrough", e)
-    const durationchange = (e) => dispatch("durationchange", e)
-    const loadeddata = (e) => dispatch("loadeddata", e)
-    const playing = (e) => dispatch("playing", e)
-    const stalled = (e) => dispatch("stalled", e)
-    const ratechange = (e) => dispatch("ratechange", e)
-    const suspend = (e) => dispatch("suspend", e)
-    const waiting = (e) => dispatch("waiting", e)
-    const volumechange = (e) => dispatch("volumechange", e)
-
+    //Event dispatch
+    const canplay = (e) => dispatch("canplay", e);
+    const canplaythrough = (e) => dispatch("canplaythrough", e);
+    const durationchange = (e) => dispatch("durationchange", e);
+    const loadeddata = (e) => dispatch("loadeddata", e);
+    const playing = (e) => dispatch("playing", e);
+    const stalled = (e) => dispatch("stalled", e);
+    const ratechange = (e) => dispatch("ratechange", e);
+    const suspend = (e) => dispatch("suspend", e);
+    const waiting = (e) => dispatch("waiting", e);
+    const volumechange = (e) => dispatch("volumechange", e);
 </script>
 
-<audio bind:this={audio} class="d-none"
-prefetch="auto"
-on:loadedmetadata={loadedMetadata}
-on:timeupdate={timeUpdate}
-on:ended={ended}
-on:canplay={canplay}
-on:canplaythrough={canplaythrough}
-on:durationchange={durationchange}
-on:loadeddata={loadeddata}
-on:playing={playing}
-on:stalled={stalled}
-on:ratechange={ratechange}
-on:suspend={suspend}
-on:waiting={waiting}
-on:volumechange={volumechange}
-
+<audio
+    bind:this={audio}
+    class="d-none"
+    prefetch="auto"
+    on:loadedmetadata={loadedMetadata}
+    on:timeupdate={timeUpdate}
+    on:ended={ended}
+    on:canplay={canplay}
+    on:canplaythrough={canplaythrough}
+    on:durationchange={durationchange}
+    on:loadeddata={loadeddata}
+    on:playing={playing}
+    on:stalled={stalled}
+    on:ratechange={ratechange}
+    on:suspend={suspend}
+    on:waiting={waiting}
+    on:volumechange={volumechange}
 >
 </audio>
 
 <footer class="player">
-    
     <div class="now-playing-info">
         {#if $currentTrack}
             {@const imageSrc = $currentTrack.image}
             {#if imageSrc}
-                 <img src={imageSrc} alt="{$currentTrack.title} cover" class="player-track-art">
+                <img
+                    src={imageSrc}
+                    alt="{$currentTrack.title} cover"
+                    class="player-track-art"
+                />
             {:else}
-                <div class="player-track-art placeholder">?</div> <!-- Placeholder if no image -->
+                <div class="player-track-art placeholder">?</div>
+                <!-- Placeholder if no image -->
             {/if}
             <div class="player-track-details">
                 <span class="player-track-title">{$currentTrack.title}</span>
@@ -211,11 +214,15 @@ on:volumechange={volumechange}
     <div class="player-controls-center">
         <div class="player-controls-buttons">
             <!-- <button title="Shuffle" class="shuffle-btn {$shuffle ? 'active' : ''}" on:click={toggleShuffle}>🔀</button> -->
-            <button title="Previous" on:click={playPrevious} disabled={!$trackIndex}>⏮</button>
-            <button 
-                title={$isPlaying ? 'Pause' : 'Play'} 
+            <button
+                title="Previous"
+                on:click={playPrevious}
+                disabled={!$trackIndex}>⏮</button
+            >
+            <button
+                title={$isPlaying ? "Pause" : "Play"}
                 on:click={togglePlay}
-                disabled={!$trackIndex} 
+                disabled={!$trackIndex}
                 class="play-pause-btn"
             >
                 {#if $isPlaying}⏸{:else}▶{/if}
@@ -227,12 +234,12 @@ on:volumechange={volumechange}
         </div>
         <div class="playback-bar">
             <span class="time current">{displayDuration(trackprogress)}</span>
-            <input 
-                type="range" 
-                min="0" 
+            <input
+                type="range"
+                min="0"
                 max={duration || 1}
                 value={trackprogress}
-                on:input={onSeek} 
+                on:input={onSeek}
                 class="progress-slider"
                 style="--progress: {(trackprogress / (duration || 1)) * 100}%"
             />
@@ -242,15 +249,16 @@ on:volumechange={volumechange}
 
     <div class="player-extra-controls">
         <button title="Lyrics">🎤</button>
-        <a href="/queue" title="Queue">☰</a> <!-- Link to queue page -->
+        <a href="/queue" title="Queue">☰</a>
+        <!-- Link to queue page -->
         <button title="Connect to a device">💻</button>
         <div class="volume-control">
             <button title="Volume">🔊</button>
-            <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
+            <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
                 bind:value={volume}
                 on:input={changeVolume}
                 class="volume-slider"
@@ -260,8 +268,7 @@ on:volumechange={volumechange}
     </div>
 </footer>
 
-
-<style> 
+<style>
     .player {
         /* grid-row: 3 / 4; Removed */
         /* grid-column: 1 / 2; Removed */
@@ -273,8 +280,8 @@ on:volumechange={volumechange}
         background-color: #181818;
         height: 80px;
         border-top: 1px solid #282828;
-        display: grid; 
-        grid-template-columns: minmax(180px, 1fr) 2fr minmax(180px, 1fr); 
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) 2fr minmax(180px, 1fr);
         align-items: center;
         padding: 0 20px;
         gap: 20px;
@@ -345,10 +352,10 @@ on:volumechange={volumechange}
     .player-controls-buttons button:hover:not(:disabled) {
         color: #fff;
     }
-     .player-controls-buttons button:disabled {
-         opacity: 0.5;
-         cursor: not-allowed;
-     }
+    .player-controls-buttons button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
     .player-controls-buttons .play-pause-btn {
         /* font-size: 1em; */
         background-color: #fff;
@@ -392,7 +399,7 @@ on:volumechange={volumechange}
     .playback-bar .progress-slider {
         flex-grow: 1;
         cursor: pointer;
-         /* Basic slider reset */
+        /* Basic slider reset */
         -webkit-appearance: none;
         appearance: none;
         width: 100%;
@@ -404,15 +411,21 @@ on:volumechange={volumechange}
     }
 
     .playback-bar .progress-slider:hover {
-         --track-color: #1ED760;
+        --track-color: #1ed760;
     }
-     .playback-bar .progress-slider:disabled {
-          cursor: not-allowed;
-     }
+    .playback-bar .progress-slider:disabled {
+        cursor: not-allowed;
+    }
 
     /* Track styling */
     .playback-bar .progress-slider {
-        background: linear-gradient(to right, var(--track-color) 0%, var(--track-color) var(--progress, 0%), #4d4d4d var(--progress, 0%), #4d4d4d 100%);
+        background: linear-gradient(
+            to right,
+            var(--track-color) 0%,
+            var(--track-color) var(--progress, 0%),
+            #4d4d4d var(--progress, 0%),
+            #4d4d4d 100%
+        );
     }
 
     /* Thumb styling (basic) */
@@ -441,7 +454,7 @@ on:volumechange={volumechange}
     /* Show thumb on hover */
     .playback-bar:hover .progress-slider::-webkit-slider-thumb,
     .playback-bar:hover .progress-slider::-moz-range-thumb {
-         opacity: 1;
+        opacity: 1;
     }
 
     .player-extra-controls {
@@ -459,9 +472,9 @@ on:volumechange={volumechange}
         font-size: 1.1em;
         cursor: pointer;
     }
-     .player-extra-controls button:hover {
-         color: #fff;
-     }
+    .player-extra-controls button:hover {
+        color: #fff;
+    }
 
     .volume-control {
         display: flex;
@@ -470,7 +483,7 @@ on:volumechange={volumechange}
     }
 
     .volume-control .volume-slider {
-         /* Basic slider reset */
+        /* Basic slider reset */
         -webkit-appearance: none;
         appearance: none;
         width: 80px; /* Adjust width */
@@ -479,15 +492,21 @@ on:volumechange={volumechange}
         border-radius: 2px;
         outline: none;
         cursor: pointer;
-         --track-color: #fff;
+        --track-color: #fff;
     }
-     .volume-control:hover .volume-slider {
-         --track-color: #1ED760;
-     }
+    .volume-control:hover .volume-slider {
+        --track-color: #1ed760;
+    }
 
     /* Volume Track styling */
     .volume-control .volume-slider {
-        background: linear-gradient(to right, var(--track-color) 0%, var(--track-color) var(--volume, 80%), #4d4d4d var(--volume, 80%), #4d4d4d 100%);
+        background: linear-gradient(
+            to right,
+            var(--track-color) 0%,
+            var(--track-color) var(--volume, 80%),
+            #4d4d4d var(--volume, 80%),
+            #4d4d4d 100%
+        );
     }
 
     /* Volume Thumb styling (basic) */
@@ -512,10 +531,10 @@ on:volumechange={volumechange}
         opacity: 0;
         transition: opacity 0.1s ease-in-out;
     }
-     /* Show Volume thumb on hover */
+    /* Show Volume thumb on hover */
     .volume-control:hover .volume-slider::-webkit-slider-thumb,
     .volume-control:hover .volume-slider::-moz-range-thumb {
-         opacity: 1;
+        opacity: 1;
     }
 
     .like-btn {
@@ -530,7 +549,7 @@ on:volumechange={volumechange}
         color: #fff;
     }
     .like-btn.liked {
-        color: #1ED760; /* Spotify Green */
+        color: #1ed760; /* Spotify Green */
     }
 
     .player-track-art.placeholder {
