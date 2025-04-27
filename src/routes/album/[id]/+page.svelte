@@ -1,20 +1,18 @@
 <script>
-  import { page } from '$app/stores';
-  import { writable } from 'svelte/store';
+  import { onMount } from 'svelte';
 
   import { trackIndex, setPlayerContext } from '$lib/Audioplayer/store.js';
   import { fly } from 'svelte/transition';
 
   export let data;
-
-  const album = data;
-
+  let y = 0;
   let scrollContainer;
-  const scrolled = writable(false);
 
   function handleScroll() {
-    scrolled.set(scrollContainer.scrollTop > 60); // Adjust threshold for mini bar appearance
+    y = scrollContainer.scrollTop;
   }
+
+  const album = data;
 
   // --- State ---
   let showMoreMenu = false;
@@ -41,12 +39,18 @@
     // Helper to close menu when clicking away
     showMoreMenu = false;
   }
+
+  onMount(() => {
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  });
 </script>
 
-<div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll}>
+
+<div class="scroll-container" bind:this="{scrollContainer}">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="album-page" on:click|capture={closeMenu} role="button" tabindex="0">
-    <header class="album-header" class:scrolled={$scrolled} style="background: linear-gradient(rgba(0,0,0,0.6), #121212), #3a3a2a;">
+    <header class="album-header" style="background: linear-gradient(rgba(0,0,0,0.6), #121212), #3a3a2a;">
       <div class="album-header-content">
         <img src={album.imageUrl} alt="{album.title} cover" class="album-art">
         <div class="album-info">
@@ -57,12 +61,12 @@
       </div>
     </header>
 
-    {#if $scrolled}
+    {#if y > 325}
       <div class="mini-bar">
         <button class="play-btn small" title="Play" on:click={playAlbum}>▶</button>
-        <span class="mini-bar-title">{album.title}</span>
+        <span class="mini-bar-title">{album.title} ScrollY : {y}</span>
       </div>
-    {/if}
+      {/if}
 
     <div class="album-controls">
       <button class="play-btn large" title="Play" on:click={playAlbum}>▶</button>
@@ -85,7 +89,7 @@
 
     <div class="track-list-container">
       <section class="track-list">
-        <div class="track-header">
+        <div class="track-header" class:sticky-track-header={true}>
           <span>#</span>
           <span>Title</span>
           <span>🕒</span>
@@ -114,50 +118,25 @@
 
 <style>
   .scroll-container {
-    height: 100vh;
-    overflow-y: auto;
     background: #121212;
     color: white;
     position: relative;
-    padding-bottom: 100px;;
+    overflow-y: auto;
+    height: 100%;
   }
 
   .album-page {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    overflow: hidden;
     background: #121212;
     color: white;
   }
 
-  .sticky-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: #121212;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    z-index: 10;
-    border-bottom: 1px solid #333;
-  }
-
   .album-header {
-    position: sticky;
-    top: 0;
     z-index: 10;
     background: linear-gradient(rgba(0, 0, 0, 0.6), #121212), #3a3a2a;
     padding: 2rem 1rem;
     transition: all 0.3s ease;
-  }
-
-  .album-header.scrolled {
-    padding: 1rem 1rem;
-    background: #121212;
   }
 
   .album-header-content {
@@ -171,11 +150,6 @@
     height: 200px;
     object-fit: cover;
     transition: width 0.3s ease, height 0.3s ease;
-  }
-
-  .album-header.scrolled .album-art {
-    width: 100px;
-    height: 100px;
   }
 
   .album-info {
@@ -192,13 +166,11 @@
     transition: font-size 0.3s ease;
   }
 
-  .album-header.scrolled .album-title {
-    font-size: 1.5rem;
-  }
-
   .mini-bar {
-    position: sticky;
-    top: 0;
+    position: fixed;
+  top: 60px;
+  height: 3rem;;
+  width: 100%;
     z-index: 15;
     display: flex;
     align-items: center;
@@ -210,7 +182,7 @@
 }
 
 .mini-bar-title {
-    font-size: 1rem; /* Smaller font size to match the image */
+    font-size: 1.4rem; /* Smaller font size to match the image */
     font-weight: 600;
     color: white;
 }
@@ -224,9 +196,13 @@
     border-bottom: 1px solid #333;
   }
 
+  .sticky-track-header {
+    position:sticky;
+    top: 0;
+  }
+
   .track-list-container {
     flex: 1;
-    overflow-y: auto;
   }
 
   .album-info .type {
@@ -289,14 +265,6 @@
     background-color: #1fdf64;
   }
 
-  .like-btn.large {
-    font-size: 2em;
-    color: #b3b3b3;
-  }
-
-  .like-btn.large.liked {
-    color: #1ED760;
-  }
 
   .icon-btn {
     background: none;
@@ -368,7 +336,6 @@
 
   .track-list-container {
     flex: 1; /* Take remaining space */
-    overflow-y: auto; /* Scrollable vertically */
     padding: 1rem;
   }
 
