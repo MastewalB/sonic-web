@@ -1,0 +1,156 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #121212;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    height: 100vh;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    height: calc(100vh - 80px); /* Adjust based on player height */
+    overflow: hidden;
+}
+
+.sidebar {
+    background-color: #040404;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+nav ul, .playlists ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li, .playlists ul li {
+    margin-bottom: 10px;
+}
+
+nav a, .playlists a {
+    color: #b3b3b3;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+nav a:hover, .playlists a:hover {
+    color: #fff;
+}
+
+.playlists h3 {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #b3b3b3;
+}
+
+.main-content {
+    background-color: #121212;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.main-content h1, .main-content h2 {
+    margin-bottom: 20px;
+}
+
+.grid-container {
+    margin-bottom: 30px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: #181818;
+    padding: 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.card:hover {
+    background-color: #282828;
+}
+
+.card img {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.card h4 {
+    margin: 0 0 5px 0;
+    font-size: 1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #b3b3b3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player {
+    background-color: #181818;
+    height: 80px;
+    border-top: 1px solid #282828;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.player-controls button {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.player-controls button:hover {
+    color: #fff;
+}
+
+.now-playing {
+    font-size: 0.9em;
+    color: #b3b3b3;
+}
+
+button, input {
+    font-family: inherit;
+}
+
+/* Basic reset for links */
+a {
+    color: inherit; /* Inherit color from parent */
+    text-decoration: none; /* Remove underline */
+}
+
+a:hover {
+     color: #ddd; 
+} 
