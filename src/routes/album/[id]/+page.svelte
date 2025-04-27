@@ -1,8 +1,8 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
 
-  import { trackIndex, setPlayerContext } from '$lib/Audioplayer/store.js';
-  import { fly } from 'svelte/transition';
+  import { trackIndex, setPlayerContext } from "$lib/Audioplayer/store.js";
+  import { fly } from "svelte/transition";
 
   export let data;
   let y = 0;
@@ -28,7 +28,7 @@
 
   function toggleLikeAlbum() {
     // Placeholder: Add logic to like/unlike the whole album
-    console.log('Toggle album like');
+    console.log("Toggle album like");
   }
 
   function toggleMoreMenu() {
@@ -41,18 +41,25 @@
   }
 
   onMount(() => {
-    scrollContainer.addEventListener('scroll', handleScroll);
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    scrollContainer.addEventListener("scroll", handleScroll);
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
   });
 </script>
 
-
-<div class="scroll-container" bind:this="{scrollContainer}">
+<div class="scroll-container" bind:this={scrollContainer}>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="album-page" on:click|capture={closeMenu} role="button" tabindex="0">
-    <header class="album-header" style="background: linear-gradient(rgba(0,0,0,0.6), #121212), #3a3a2a;">
+  <div
+    class="album-page"
+    on:click|capture={closeMenu}
+    role="button"
+    tabindex="0"
+  >
+    <header
+      class="album-header"
+      style="background: linear-gradient(rgba(0,0,0,0.6), #121212), #3a3a2a;"
+    >
       <div class="album-header-content">
-        <img src={album.imageUrl} alt="{album.title} cover" class="album-art">
+        <img src={album.imageUrl} alt="{album.title} cover" class="album-art" />
         <div class="album-info">
           <span class="type">Album</span>
           <h1 class="album-title">{album.title}</h1>
@@ -63,20 +70,32 @@
 
     {#if y > 325}
       <div class="mini-bar">
-        <button class="play-btn small" title="Play" on:click={playAlbum}>▶</button>
+        <button class="play-btn small" title="Play" on:click={playAlbum}
+          >▶</button
+        >
         <span class="mini-bar-title">{album.title} ScrollY : {y}</span>
       </div>
-      {/if}
+    {/if}
 
     <div class="album-controls">
-      <button class="play-btn large" title="Play" on:click={playAlbum}>▶</button>
+      <button class="play-btn large" title="Play" on:click={playAlbum}
+        >▶</button
+      >
       <button title="Download" class="icon-btn disabled">↓</button>
       <div class="more-menu-container">
-        <button title="More options" class="options-btn icon-btn" on:click|stopPropagation={toggleMoreMenu}>...</button>
+        <button
+          title="More options"
+          class="options-btn icon-btn"
+          on:click|stopPropagation={toggleMoreMenu}>...</button
+        >
         {#if showMoreMenu}
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div class="more-menu" transition:fly={{ y: -5, duration: 150 }} on:click|stopPropagation>
+          <div
+            class="more-menu"
+            transition:fly={{ y: -5, duration: 150 }}
+            on:click|stopPropagation
+          >
             <button>Remove from Your Library</button>
             <button>Add to queue</button>
             <button>Go to artist radio</button>
@@ -97,9 +116,9 @@
         {#each album.tracks as track, index}
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div 
-            class="track-item" 
-            class:playing={index === $trackIndex} 
+          <div
+            class="track-item"
+            class:playing={index === $trackIndex}
             on:click={() => playTrack(index)}
             on:dblclick={() => playTrack(index)}
           >
@@ -149,7 +168,9 @@
     width: 200px;
     height: 200px;
     object-fit: cover;
-    transition: width 0.3s ease, height 0.3s ease;
+    transition:
+      width 0.3s ease,
+      height 0.3s ease;
   }
 
   .album-info {
@@ -168,9 +189,9 @@
 
   .mini-bar {
     position: fixed;
-  top: 60px;
-  height: 3rem;;
-  width: 100%;
+    top: 60px;
+    height: 3rem;
+    width: 100%;
     z-index: 15;
     display: flex;
     align-items: center;
@@ -179,13 +200,13 @@
     padding: 0.5rem 1rem;
     border-bottom: 1px solid #333;
     gap: 1rem; /* Add spacing between play button and title */
-}
+  }
 
-.mini-bar-title {
+  .mini-bar-title {
     font-size: 1.4rem; /* Smaller font size to match the image */
     font-weight: 600;
     color: white;
-}
+  }
 
   .track-header {
     position: sticky;
@@ -197,7 +218,7 @@
   }
 
   .sticky-track-header {
-    position:sticky;
+    position: sticky;
     top: 0;
   }
 
@@ -258,13 +279,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-}
+  }
 
   .play-btn.large:hover {
     transform: scale(1.05);
     background-color: #1fdf64;
   }
-
 
   .icon-btn {
     background: none;
@@ -404,10 +424,10 @@
   }
 
   .track-item.playing .track-title {
-    color: #1ED760; /* Spotify Green for playing track */
+    color: #1ed760; /* Spotify Green for playing track */
   }
 
   .track-item.playing .track-number {
-    color: #1ED760; /* Also color number */
+    color: #1ed760; /* Also color number */
   }
 </style>

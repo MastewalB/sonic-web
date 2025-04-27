@@ -36,5 +36,5 @@ export async function load({ params }) {
         tracks: tracks,
     }
 
-    return data;
+    return Promise.resolve(data);
 }
